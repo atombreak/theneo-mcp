@@ -25,6 +25,137 @@ function createTheneoClient(apiKey?: string, baseApiUrl?: string, baseAppUrl?: s
 }
 
 /**
+ * Helper function to resolve workspace name to workspace ID
+ */
+async function resolveWorkspaceId(
+  theneo: Theneo,
+  workspaceId?: string,
+  workspaceKey?: string,
+  workspaceName?: string
+): Promise<string | undefined> {
+  // If workspaceId is provided, use it directly
+  if (workspaceId) {
+    return workspaceId;
+  }
+
+  // If workspaceKey is provided, use it (it's already a valid identifier)
+  if (workspaceKey) {
+    // workspaceKey is a slug that can be used directly in most cases
+    // but we need to resolve it to an ID
+    try {
+      const result = await theneo.listWorkspaces();
+      if (!result.ok) {
+        logger.error("Failed to list workspaces for key resolution", { error: result.error });
+        return undefined;
+      }
+
+      const workspaces = result.value;
+      const matchingWorkspace = workspaces.find(
+        (w: any) => w.key?.toLowerCase() === workspaceKey.toLowerCase()
+      );
+
+      if (matchingWorkspace) {
+        logger.debug("Resolved workspace key to ID", {
+          workspaceKey,
+          workspaceId: (matchingWorkspace as any).id,
+        });
+        return (matchingWorkspace as any).id;
+      }
+
+      logger.warn("No workspace found with key", { workspaceKey });
+      return undefined;
+    } catch (error) {
+      logger.error("Error resolving workspace key", { error, workspaceKey });
+      return undefined;
+    }
+  }
+
+  // If workspaceName is provided, look it up
+  if (workspaceName) {
+    try {
+      const result = await theneo.listWorkspaces();
+      if (!result.ok) {
+        logger.error("Failed to list workspaces for name resolution", { error: result.error });
+        return undefined;
+      }
+
+      const workspaces = result.value;
+      const matchingWorkspace = workspaces.find(
+        (w: any) => w.name?.toLowerCase() === workspaceName.toLowerCase()
+      );
+
+      if (matchingWorkspace) {
+        logger.debug("Resolved workspace name to ID", {
+          workspaceName,
+          workspaceId: (matchingWorkspace as any).id,
+        });
+        return (matchingWorkspace as any).id;
+      }
+
+      logger.warn("No workspace found with name", { workspaceName });
+      return undefined;
+    } catch (error) {
+      logger.error("Error resolving workspace name", { error, workspaceName });
+      return undefined;
+    }
+  }
+
+  return undefined;
+}
+
+/**
+ * Helper function to resolve project name to project ID
+ */
+async function resolveProjectId(
+  theneo: Theneo,
+  projectId?: string,
+  projectName?: string,
+  workspaceId?: string
+): Promise<string | null> {
+  // If projectId is provided, use it directly
+  if (projectId) {
+    return projectId;
+  }
+
+  // If projectName is provided, look it up
+  if (projectName) {
+    try {
+      const result = await theneo.listProjects();
+      if (!result.ok) {
+        logger.error("Failed to list projects for name resolution", { error: result.error });
+        return null;
+      }
+
+      const projects = result.value;
+      // Filter by workspace if provided
+      const filteredProjects = workspaceId
+        ? projects.filter((p: any) => p.workspaceId === workspaceId)
+        : projects;
+
+      const matchingProject = filteredProjects.find(
+        (p: any) => p.name.toLowerCase() === projectName.toLowerCase()
+      );
+
+      if (matchingProject) {
+        logger.debug("Resolved project name to ID", {
+          projectName,
+          projectId: matchingProject.id,
+        });
+        return matchingProject.id;
+      }
+
+      logger.warn("No project found with name", { projectName, workspaceId });
+      return null;
+    } catch (error) {
+      logger.error("Error resolving project name", { error, projectName });
+      return null;
+    }
+  }
+
+  return null;
+}
+
+/**
  * Tool schemas and handlers
  */
 
@@ -38,11 +169,35 @@ const ListWorkspacesTool: Tool = {
   },
 };
 
+// List Projects Tool
+const ListProjectsTool: Tool = {
+  name: "theneo_list_projects",
+  description: "List all projects in a workspace or across all workspaces. You can specify the workspace by ID, key (slug), or name. Returns project names, IDs, and details.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      workspaceId: {
+        type: "string",
+        description: "Optional workspace ID to filter projects",
+      },
+      workspaceKey: {
+        type: "string",
+        description: "Optional workspace key (slug) to filter projects",
+      },
+      workspaceName: {
+        type: "string",
+        description: "Optional workspace name to filter projects",
+      },
+    },
+  },
+};
+
 // Create Project Tool
 const CreateProjectSchema = z.object({
   name: z.string().describe("Project name"),
   workspaceKey: z.string().optional().describe("Workspace key (slug)"),
   workspaceId: z.string().optional().describe("Workspace ID"),
+  workspaceName: z.string().optional().describe("Workspace name (alternative to workspaceId/workspaceKey)"),
   publish: z.boolean().optional().default(false).describe("Publish immediately after creation"),
   isPublic: z.boolean().optional().default(false).describe("Make the project public"),
   descriptionGeneration: z
@@ -59,13 +214,14 @@ const CreateProjectSchema = z.object({
 const CreateProjectTool: Tool = {
   name: "theneo_create_project",
   description:
-    "Create a new Theneo project with optional API documentation import. Supports file, URL, raw text, or Postman collections. Can enable AI-powered description generation.",
+    "Create a new Theneo project with optional API documentation import. You can specify the workspace by ID, key (slug), or name. Supports file, URL, raw text, or Postman collections. Can enable AI-powered description generation.",
   inputSchema: {
     type: "object",
     properties: {
       name: { type: "string", description: "Project name" },
       workspaceKey: { type: "string", description: "Workspace key (slug)" },
       workspaceId: { type: "string", description: "Workspace ID" },
+      workspaceName: { type: "string", description: "Workspace name (alternative to workspaceId/workspaceKey)" },
       publish: { type: "boolean", description: "Publish immediately", default: false },
       isPublic: { type: "boolean", description: "Make project public", default: false },
       descriptionGeneration: {
@@ -89,7 +245,11 @@ const CreateProjectTool: Tool = {
 
 // Import Project Document Tool
 const ImportProjectDocumentSchema = z.object({
-  projectId: z.string().describe("Project ID"),
+  projectId: z.string().optional().describe("Project ID (provide either projectId or projectName)"),
+  projectName: z.string().optional().describe("Project name (provide either projectId or projectName)"),
+  workspaceId: z.string().optional().describe("Workspace ID (optional, helps when using projectName)"),
+  workspaceKey: z.string().optional().describe("Workspace key (optional, helps when using projectName)"),
+  workspaceName: z.string().optional().describe("Workspace name (optional, helps when using projectName)"),
   publish: z.boolean().default(true).describe("Publish after import"),
   importOption: z
     .enum(["ENDPOINTS_ONLY", "OVERWRITE", "MERGE"])
@@ -100,16 +260,22 @@ const ImportProjectDocumentSchema = z.object({
   text: z.string().optional().describe("Raw OpenAPI/Swagger spec as text"),
   postmanApiKey: z.string().optional().describe("Postman API key"),
   postmanCollectionIds: z.array(z.string()).optional().describe("Postman collection IDs"),
+}).refine((data) => data.projectId || data.projectName, {
+  message: "Either projectId or projectName must be provided",
 });
 
 const ImportProjectDocumentTool: Tool = {
   name: "theneo_import_project_document",
   description:
-    "Import or update API documentation in an existing project. Supports merge, overwrite, or endpoints-only modes.",
+    "Import or update API documentation in an existing project. You can specify the project by ID or by name, and workspace by ID, key, or name. Supports merge, overwrite, or endpoints-only modes.",
   inputSchema: {
     type: "object",
     properties: {
-      projectId: { type: "string", description: "Project ID" },
+      projectId: { type: "string", description: "Project ID (provide either projectId or projectName)" },
+      projectName: { type: "string", description: "Project name (provide either projectId or projectName)" },
+      workspaceId: { type: "string", description: "Workspace ID (optional, helps when using projectName)" },
+      workspaceKey: { type: "string", description: "Workspace key/slug (optional, helps when using projectName)" },
+      workspaceName: { type: "string", description: "Workspace name (optional, helps when using projectName)" },
       publish: { type: "boolean", description: "Publish after import", default: true },
       importOption: {
         type: "string",
@@ -126,33 +292,38 @@ const ImportProjectDocumentTool: Tool = {
         description: "Postman collection IDs",
       },
     },
-    required: ["projectId"],
   },
 };
 
 // Publish Project Tool
 const PublishProjectTool: Tool = {
   name: "theneo_publish_project",
-  description: "Publish a project to make it available at its public URL",
+  description: "Publish a project to make it available at its public URL. You can specify the project by ID or name, and workspace by ID, key, or name.",
   inputSchema: {
     type: "object",
     properties: {
-      projectId: { type: "string", description: "Project ID" },
+      projectId: { type: "string", description: "Project ID (provide either projectId or projectName)" },
+      projectName: { type: "string", description: "Project name (provide either projectId or projectName)" },
+      workspaceId: { type: "string", description: "Workspace ID (optional, helps when using projectName)" },
+      workspaceKey: { type: "string", description: "Workspace key/slug (optional, helps when using projectName)" },
+      workspaceName: { type: "string", description: "Workspace name (optional, helps when using projectName)" },
     },
-    required: ["projectId"],
   },
 };
 
 // Preview Link Tool
 const PreviewLinkTool: Tool = {
   name: "theneo_preview_link",
-  description: "Get the editor preview URL for a project",
+  description: "Get the editor preview URL for a project. You can specify the project by ID or name, and workspace by ID, key, or name.",
   inputSchema: {
     type: "object",
     properties: {
-      projectId: { type: "string", description: "Project ID" },
+      projectId: { type: "string", description: "Project ID (provide either projectId or projectName)" },
+      projectName: { type: "string", description: "Project name (provide either projectId or projectName)" },
+      workspaceId: { type: "string", description: "Workspace ID (optional, helps when using projectName)" },
+      workspaceKey: { type: "string", description: "Workspace key/slug (optional, helps when using projectName)" },
+      workspaceName: { type: "string", description: "Workspace name (optional, helps when using projectName)" },
     },
-    required: ["projectId"],
   },
 };
 
@@ -160,15 +331,18 @@ const PreviewLinkTool: Tool = {
 const WaitForGenerationTool: Tool = {
   name: "theneo_wait_for_generation",
   description:
-    "Wait for AI description generation to complete. Useful after creating a project with AI generation enabled.",
+    "Wait for AI description generation to complete. Useful after creating a project with AI generation enabled. You can specify the project by ID or name, and workspace by ID, key, or name.",
   inputSchema: {
     type: "object",
     properties: {
-      projectId: { type: "string", description: "Project ID" },
+      projectId: { type: "string", description: "Project ID (provide either projectId or projectName)" },
+      projectName: { type: "string", description: "Project name (provide either projectId or projectName)" },
+      workspaceId: { type: "string", description: "Workspace ID (optional, helps when using projectName)" },
+      workspaceKey: { type: "string", description: "Workspace key/slug (optional, helps when using projectName)" },
+      workspaceName: { type: "string", description: "Workspace name (optional, helps when using projectName)" },
       retryTimeMs: { type: "number", description: "Polling interval in ms", default: 2500 },
       maxWaitTimeMs: { type: "number", description: "Maximum wait time in ms", default: 120000 },
     },
-    required: ["projectId"],
   },
 };
 
@@ -212,6 +386,7 @@ async function main() {
     return {
       tools: [
         ListWorkspacesTool,
+        ListProjectsTool,
         CreateProjectTool,
         ImportProjectDocumentTool,
         PublishProjectTool,
@@ -257,9 +432,91 @@ async function main() {
           };
         }
 
+        case "theneo_list_projects": {
+          const { workspaceId: inputWorkspaceId, workspaceKey, workspaceName } = args as {
+            workspaceId?: string;
+            workspaceKey?: string;
+            workspaceName?: string;
+          };
+
+          // Resolve workspace ID if name or key provided
+          const workspaceId = await resolveWorkspaceId(
+            theneo,
+            inputWorkspaceId,
+            workspaceKey,
+            workspaceName
+          );
+
+          if ((workspaceKey || workspaceName) && !workspaceId) {
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: workspaceName
+                    ? `Error: Workspace '${workspaceName}' not found`
+                    : `Error: Workspace '${workspaceKey}' not found`,
+                },
+              ],
+            };
+          }
+
+          logger.info("Listing projects", { workspaceId, workspaceKey, workspaceName });
+          
+          const result = await theneo.listProjects();
+
+          if (!result.ok) {
+            const error = result.error;
+            logger.error("Failed to list projects", { error });
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: `Error: ${error?.message || "Failed to list projects"}`,
+                },
+              ],
+            };
+          }
+
+          let projects = result.value;
+          
+          // Filter by workspace if requested
+          if (workspaceId) {
+            projects = projects.filter((p: any) => p.workspaceId === workspaceId);
+          }
+
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(projects, null, 2),
+              },
+            ],
+          };
+        }
+
         case "theneo_create_project": {
           const input = CreateProjectSchema.parse(args);
-          logger.info("Creating project", { name: input.name });
+          
+          // Resolve workspace ID if name is provided
+          const resolvedWorkspaceId = await resolveWorkspaceId(
+            theneo,
+            input.workspaceId,
+            input.workspaceKey,
+            input.workspaceName
+          );
+
+          if (input.workspaceName && !resolvedWorkspaceId) {
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: `Error: Workspace '${input.workspaceName}' not found`,
+                },
+              ],
+            };
+          }
+
+          logger.info("Creating project", { name: input.name, workspace: input.workspaceName || input.workspaceKey || input.workspaceId });
 
           // Validate that at most one data source is provided
           const sources = [
@@ -294,8 +551,8 @@ async function main() {
 
           const result = await theneo.createProject({
             name: input.name,
-            workspace: input.workspaceId
-              ? { id: input.workspaceId }
+            workspace: resolvedWorkspaceId
+              ? { id: resolvedWorkspaceId }
               : input.workspaceKey
                 ? { key: input.workspaceKey }
                 : undefined,
@@ -337,7 +594,48 @@ async function main() {
 
         case "theneo_import_project_document": {
           const input = ImportProjectDocumentSchema.parse(args);
-          logger.info("Importing document", { projectId: input.projectId });
+          
+          // Resolve workspace ID if name or key provided
+          const workspaceId = await resolveWorkspaceId(
+            theneo,
+            input.workspaceId,
+            input.workspaceKey,
+            input.workspaceName
+          );
+
+          if (input.workspaceName && !workspaceId) {
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: `Error: Workspace '${input.workspaceName}' not found`,
+                },
+              ],
+            };
+          }
+          
+          // Resolve project ID from name if needed
+          const projectId = await resolveProjectId(
+            theneo,
+            input.projectId,
+            input.projectName,
+            workspaceId
+          );
+
+          if (!projectId) {
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: input.projectName
+                    ? `Error: Project '${input.projectName}' not found`
+                    : "Error: projectId or projectName is required",
+                },
+              ],
+            };
+          }
+
+          logger.info("Importing document", { projectId, projectName: input.projectName, workspace: input.workspaceName || input.workspaceKey });
 
           // Validate exactly one data source
           const sources = [
@@ -382,7 +680,7 @@ async function main() {
           }
 
           const result = await theneo.importProjectDocument({
-            projectId: input.projectId,
+            projectId,
             publish: input.publish,
             data,
             importOption: input.importOption as any,
@@ -414,8 +712,50 @@ async function main() {
         }
 
         case "theneo_publish_project": {
-          const { projectId } = args as { projectId: string };
-          logger.info("Publishing project", { projectId });
+          const { projectId: inputProjectId, projectName, workspaceId: inputWorkspaceId, workspaceKey, workspaceName } = args as {
+            projectId?: string;
+            projectName?: string;
+            workspaceId?: string;
+            workspaceKey?: string;
+            workspaceName?: string;
+          };
+
+          // Resolve workspace ID if name or key provided
+          const workspaceId = await resolveWorkspaceId(
+            theneo,
+            inputWorkspaceId,
+            workspaceKey,
+            workspaceName
+          );
+
+          if (workspaceName && !workspaceId) {
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: `Error: Workspace '${workspaceName}' not found`,
+                },
+              ],
+            };
+          }
+
+          // Resolve project ID from name if needed
+          const projectId = await resolveProjectId(theneo, inputProjectId, projectName, workspaceId);
+
+          if (!projectId) {
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: projectName
+                    ? `Error: Project '${projectName}' not found`
+                    : "Error: projectId or projectName is required",
+                },
+              ],
+            };
+          }
+
+          logger.info("Publishing project", { projectId, projectName, workspace: workspaceName || workspaceKey });
 
           const result = await theneo.publishProject(projectId);
 
@@ -445,8 +785,50 @@ async function main() {
         }
 
         case "theneo_preview_link": {
-          const { projectId } = args as { projectId: string };
-          logger.info("Getting preview link", { projectId });
+          const { projectId: inputProjectId, projectName, workspaceId: inputWorkspaceId, workspaceKey, workspaceName } = args as {
+            projectId?: string;
+            projectName?: string;
+            workspaceId?: string;
+            workspaceKey?: string;
+            workspaceName?: string;
+          };
+
+          // Resolve workspace ID if name or key provided
+          const workspaceId = await resolveWorkspaceId(
+            theneo,
+            inputWorkspaceId,
+            workspaceKey,
+            workspaceName
+          );
+
+          if (workspaceName && !workspaceId) {
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: `Error: Workspace '${workspaceName}' not found`,
+                },
+              ],
+            };
+          }
+
+          // Resolve project ID from name if needed
+          const projectId = await resolveProjectId(theneo, inputProjectId, projectName, workspaceId);
+
+          if (!projectId) {
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: projectName
+                    ? `Error: Project '${projectName}' not found`
+                    : "Error: projectId or projectName is required",
+                },
+              ],
+            };
+          }
+
+          logger.info("Getting preview link", { projectId, projectName, workspace: workspaceName || workspaceKey });
 
           const link = theneo.getPreviewProjectLink(projectId);
           return {
@@ -461,16 +843,59 @@ async function main() {
 
         case "theneo_wait_for_generation": {
           const {
-            projectId,
+            projectId: inputProjectId,
+            projectName,
+            workspaceId: inputWorkspaceId,
+            workspaceKey,
+            workspaceName,
             retryTimeMs = 2500,
             maxWaitTimeMs = 120000,
           } = args as {
-            projectId: string;
+            projectId?: string;
+            projectName?: string;
+            workspaceId?: string;
+            workspaceKey?: string;
+            workspaceName?: string;
             retryTimeMs?: number;
             maxWaitTimeMs?: number;
           };
 
-          logger.info("Waiting for generation", { projectId });
+          // Resolve workspace ID if name or key provided
+          const workspaceId = await resolveWorkspaceId(
+            theneo,
+            inputWorkspaceId,
+            workspaceKey,
+            workspaceName
+          );
+
+          if (workspaceName && !workspaceId) {
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: `Error: Workspace '${workspaceName}' not found`,
+                },
+              ],
+            };
+          }
+
+          // Resolve project ID from name if needed
+          const projectId = await resolveProjectId(theneo, inputProjectId, projectName, workspaceId);
+
+          if (!projectId) {
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: projectName
+                    ? `Error: Project '${projectName}' not found`
+                    : "Error: projectId or projectName is required",
+                },
+              ],
+            };
+          }
+
+          logger.info("Waiting for generation", { projectId, projectName, workspace: workspaceName || workspaceKey });
 
           const result = await theneo.waitForDescriptionGeneration(
             projectId,

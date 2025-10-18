@@ -14,9 +14,10 @@ Theneo MCP enables any AI assistant (Claude Desktop, VS Code Copilot, Cursor, et
 ### Key Features
 
 - 💬 **Natural Language**: Just talk—no need to memorize tool names or parameters!
+- 🎯 **Name-Based References**: Reference projects and workspaces by name instead of IDs—AI looks them up automatically!
 - 🤖 **AI-First**: Works with any MCP-compatible AI assistant (Claude, VS Code, Cursor)
 - 🔐 **Enterprise Security**: Multi-source config, OS keychain support, secret masking
-- 🎯 **6 Core Tools**: List workspaces, create projects, import specs, publish, preview, and wait for AI generation
+- 🛠️ **7 Core Tools**: List workspaces/projects, create, import, publish, preview, and wait for AI generation
 - 📦 **Flexible Input**: Supports OpenAPI/Swagger files, URLs, raw text, and Postman collections
 - 🚀 **AI-Powered**: Built-in AI description generation (fill, overwrite, or skip)
 - 🔄 **Smart Imports**: Merge, overwrite, or endpoints-only update strategies
@@ -223,6 +224,8 @@ THENEO_PROFILE=production theneo-mcp server
 
 💡 **Tip**: You don't need to use the exact tool names! Just talk naturally to your AI assistant, and it will figure out which tool to call.
 
+🎯 **New**: You can now reference **projects** and **workspaces** by **name** instead of remembering their IDs! The AI will automatically look them up for you.
+
 ### 1. `theneo_list_workspaces`
 
 List all workspaces accessible to your account.
@@ -243,14 +246,38 @@ List all my Theneo workspaces
 Use theneo_list_workspaces
 ```
 
-### 2. `theneo_create_project`
+### 2. `theneo_list_projects`
 
-Create a new API documentation project with optional spec import and AI generation.
+List all projects in a workspace or across all workspaces. You can filter by workspace using ID, key (slug), or name. Returns project names, IDs, and details.
+
+**Parameters:**
+- `workspaceId` (string, optional): Workspace ID to filter projects
+- `workspaceKey` (string, optional): Workspace key/slug to filter projects
+- `workspaceName` (string, optional): Workspace name to filter projects
+
+**Natural Language Examples:**
+```
+Show me all my projects
+
+List all projects in the "Engineering" workspace
+
+What projects do I have in my "Production" workspace?
+```
+
+**Explicit Tool Call (for testing/debugging):**
+```
+Use theneo_list_projects
+```
+
+### 3. `theneo_create_project`
+
+Create a new API documentation project with optional spec import and AI generation. You can specify the workspace by ID, key (slug), or name.
 
 **Parameters:**
 - `name` (string, required): Project name
 - `workspaceKey` (string, optional): Workspace slug
 - `workspaceId` (string, optional): Workspace ID
+- `workspaceName` (string, optional): Workspace name
 - `publish` (boolean, optional): Publish immediately
 - `isPublic` (boolean, optional): Make project public
 - `descriptionGeneration` (enum, optional): `FILL` | `OVERWRITE` | `NO_GENERATION`
@@ -262,14 +289,14 @@ Create a new API documentation project with optional spec import and AI generati
 
 **Natural Language Examples:**
 ```
-Create a new project called "Payment API" from this OpenAPI spec: 
-https://example.com/openapi.json and make it public with AI-generated descriptions
+Create a new project called "Payment API" in the "Engineering" workspace from 
+this OpenAPI spec: https://example.com/openapi.json and make it public with AI descriptions
 
-I need to create API documentation for my REST API. The spec is at 
-./specs/api.yaml. Name it "User Service API" and enable AI descriptions.
+I need to create API documentation for my REST API in my "Production" workspace. 
+The spec is at ./specs/api.yaml. Name it "User Service API" and enable AI descriptions.
 
-Can you create a Theneo project named "Stripe Clone" using the Petstore 
-example from GitHub? Make it public and publish it immediately.
+Can you create a Theneo project named "Stripe Clone" in the "Public APIs" workspace 
+using the Petstore example from GitHub? Make it public and publish it immediately.
 ```
 
 **Explicit Tool Call (for testing/debugging):**
@@ -282,26 +309,30 @@ Use theneo_create_project with:
 - descriptionGeneration: "FILL"
 ```
 
-### 3. `theneo_import_project_document`
+### 4. `theneo_import_project_document`
 
-Import or update API documentation in an existing project.
+Import or update API documentation in an existing project. **You can reference both the project and workspace by name instead of IDs**.
 
 **Parameters:**
-- `projectId` (string, required): Target project ID
+- `projectId` (string, optional): Target project ID
+- `projectName` (string, optional): Target project name (alternative to projectId)
+- `workspaceId` (string, optional): Workspace ID (helps when using projectName)
+- `workspaceKey` (string, optional): Workspace key/slug (helps when using projectName)
+- `workspaceName` (string, optional): Workspace name (helps when using projectName)
 - `publish` (boolean, optional): Publish after import
 - `importOption` (enum, optional): `MERGE` | `OVERWRITE` | `ENDPOINTS_ONLY`
 - **Data sources** (same as create_project, one required)
 
 **Natural Language Examples:**
 ```
-Update project proj_abc123 with my latest API spec from ./api/openapi.yaml 
-and merge it with existing content
+Update the "Payment API" project in my "Engineering" workspace with the latest 
+spec from ./api/openapi.yaml and merge it with existing content
 
-I need to import a new version of my API into project proj_xyz. 
-Use this URL: https://api.example.com/openapi.json and overwrite everything.
+I need to import a new version into the "User Service" project in the "Production" 
+workspace. Use this URL: https://api.example.com/openapi.json and overwrite everything.
 
-Import the updated Postman collection into my project and publish it. 
-The project ID is proj_456 and I want to merge the changes.
+Import the updated Postman collection into "My Company API" in the "Public APIs" 
+workspace and publish it with merge.
 ```
 
 **Explicit Tool Call (for testing/debugging):**
@@ -313,20 +344,24 @@ Use theneo_import_project_document with:
 - publish: true
 ```
 
-### 4. `theneo_publish_project`
+### 5. `theneo_publish_project`
 
-Publish a project to make it live.
+Publish a project to make it live. **You can reference both project and workspace by name**.
 
 **Parameters:**
-- `projectId` (string, required): Project to publish
+- `projectId` (string, optional): Project ID
+- `projectName` (string, optional): Project name (alternative to projectId)
+- `workspaceId` (string, optional): Workspace ID (helps when using projectName)
+- `workspaceKey` (string, optional): Workspace key/slug (helps when using projectName)
+- `workspaceName` (string, optional): Workspace name (helps when using projectName)
 
 **Natural Language Examples:**
 ```
-Publish project proj_123
+Publish the "Payment API" project in my "Engineering" workspace
 
-Make my project proj_abc live
+Make the "User Service API" in the "Production" workspace live
 
-Publish the documentation for project ID proj_xyz456
+Publish the project called "Stripe Clone" in "Public APIs"
 ```
 
 **Explicit Tool Call (for testing/debugging):**
@@ -334,20 +369,24 @@ Publish the documentation for project ID proj_xyz456
 Use theneo_publish_project with projectId "proj_123"
 ```
 
-### 5. `theneo_preview_link`
+### 6. `theneo_preview_link`
 
-Get the editor preview URL for a project.
+Get the editor preview URL for a project. **You can reference both project and workspace by name**.
 
 **Parameters:**
-- `projectId` (string, required): Project ID
+- `projectId` (string, optional): Project ID
+- `projectName` (string, optional): Project name (alternative to projectId)
+- `workspaceId` (string, optional): Workspace ID (helps when using projectName)
+- `workspaceKey` (string, optional): Workspace key/slug (helps when using projectName)
+- `workspaceName` (string, optional): Workspace name (helps when using projectName)
 
 **Natural Language Examples:**
 ```
-Get me the preview link for project proj_123
+Get me the preview link for "Payment API" in the "Engineering" workspace
 
-Show me where I can edit project proj_abc
+Show me where I can edit the "User Service" project in "Production"
 
-What's the URL to view project proj_xyz in the editor?
+What's the URL to view "My Company API" in the "Public APIs" workspace?
 ```
 
 **Explicit Tool Call (for testing/debugging):**
@@ -355,22 +394,26 @@ What's the URL to view project proj_xyz in the editor?
 Use theneo_preview_link for project "proj_123"
 ```
 
-### 6. `theneo_wait_for_generation`
+### 7. `theneo_wait_for_generation`
 
-Wait for AI description generation to complete.
+Wait for AI description generation to complete. **You can reference both project and workspace by name**.
 
 **Parameters:**
-- `projectId` (string, required): Project ID
+- `projectId` (string, optional): Project ID
+- `projectName` (string, optional): Project name (alternative to projectId)
+- `workspaceId` (string, optional): Workspace ID (helps when using projectName)
+- `workspaceKey` (string, optional): Workspace key/slug (helps when using projectName)
+- `workspaceName` (string, optional): Workspace name (helps when using projectName)
 - `retryTimeMs` (number, optional): Polling interval (default: 2500)
 - `maxWaitTimeMs` (number, optional): Max wait time (default: 120000)
 
 **Natural Language Examples:**
 ```
-Wait for the AI to finish generating descriptions for project proj_123
+Wait for the AI to finish generating descriptions for "Payment API" in "Engineering"
 
-Check if AI generation is complete for my project proj_abc
+Check if AI generation is complete for "User Service" in the "Production" workspace
 
-Keep checking until the AI descriptions are done for project proj_xyz
+Keep checking until the AI descriptions are done for "My Company API" in "Public APIs"
 ```
 
 **Explicit Tool Call (for testing/debugging):**
@@ -451,7 +494,37 @@ You: "Call it 'MyCompany API v2' and make it public with AI descriptions"
 
 AI: *[Creates project, waits for AI, shows preview link]*
 "Done! Your documentation is live at [URL]. Would you like to make any changes?"
+
+You: "Actually, I need to update the 'MyCompany API v2' project with a new spec"
+
+AI: *[Automatically looks up project by name, imports new spec]*
+"Updated! The changes have been merged and published."
 ```
+
+### 🎯 Using Names Instead of IDs (No More Copy-Paste!)
+
+One of the most powerful features is the ability to reference **both projects and workspaces by name**:
+
+```
+# Old way (hard to remember)
+"Create project in workspace ws_abc123 and publish project proj_xyz456"
+
+# New way (natural)
+"Create a project in my 'Engineering' workspace and publish the 'Payment API' project"
+```
+
+The AI will automatically:
+1. Resolve workspace name → workspace ID (if needed)
+2. Resolve project name → project ID (if needed)
+3. Execute the operation
+4. Return a friendly message
+
+**This works for:**
+- ✅ Workspace references: ID, key (slug), or name
+- ✅ Project references: ID or name
+- ✅ All operations: create, import, publish, preview, wait for generation
+
+**No more copying and pasting cryptic IDs!**
 
 More examples in [`examples/demo-prompts.md`](./examples/demo-prompts.md).
 
