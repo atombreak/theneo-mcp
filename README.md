@@ -1016,8 +1016,6 @@ npm run test:coverage
 npm run test:ui
 ```
 
-See [TESTING.md](TESTING.md) for detailed testing guide.
-
 ## Telemetry
 
 Theneo MCP includes **optional, privacy-first telemetry** to help improve the tool. Telemetry is:
@@ -1037,8 +1035,6 @@ theneo-mcp telemetry status
 # Disable anytime
 theneo-mcp telemetry disable
 ```
-
-See [TELEMETRY.md](TELEMETRY.md) for complete privacy policy and details.
 
 ## CI/CD
 
