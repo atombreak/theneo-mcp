@@ -4,6 +4,10 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
+[![npm version](https://badge.fury.io/js/theneo-mcp.svg)](https://www.npmjs.com/package/theneo-mcp)
+[![CI](https://github.com/theneo/theneo-mcp/workflows/CI/badge.svg)](https://github.com/theneo/theneo-mcp/actions)
+[![codecov](https://codecov.io/gh/theneo/theneo-mcp/branch/main/graph/badge.svg)](https://codecov.io/gh/theneo/theneo-mcp)
+[![Docker Pulls](https://img.shields.io/docker/pulls/theneo/theneo-mcp)](https://hub.docker.com/r/theneo/theneo-mcp)
 
 This MCP server exposes [Theneo's](https://theneo.io) API documentation platform through the [Model Context Protocol](https://modelcontextprotocol.io/), allowing AI assistants to create, update, and publish API documentation automatically.
 
@@ -25,16 +29,47 @@ Theneo MCP enables any AI assistant (Claude Desktop, VS Code Copilot, Cursor, et
 
 ## Installation
 
-### Global Installation (Coming Soon)
+### npm (Recommended)
 
 ```bash
+# Global installation
 npm install -g theneo-mcp
+
+# Verify installation
+theneo-mcp --version
 ```
+
+### Homebrew (macOS/Linux)
+
+```bash
+# Add tap
+brew tap theneo/theneo-mcp
+
+# Install
+brew install theneo-mcp
+
+# Verify installation
+theneo-mcp --version
+```
+
+### Docker
+
+```bash
+# Pull from Docker Hub
+docker pull theneo/theneo-mcp:latest
+
+# Run with API key
+docker run -it --rm \
+  -e THENEO_API_KEY=your_api_key \
+  theneo/theneo-mcp:latest
+```
+
+See [DOCKER.md](DOCKER.md) for detailed Docker usage.
 
 ### Local Development
 
 ```bash
-git clone https://github.com/atombreak/mcp-server
+git clone https://github.com/theneo/theneo-mcp
 cd theneo-mcp
 npm install
 npm run build
@@ -920,15 +955,69 @@ npm publish
 - Examples with sensitive data
 - Development configs
 
+## Testing
+
+This project has comprehensive test coverage with both unit and integration tests.
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage
+npm run test:coverage
+
+# Open test UI
+npm run test:ui
+```
+
+See [TESTING.md](TESTING.md) for detailed testing guide.
+
+## Telemetry
+
+Theneo MCP includes **optional, privacy-first telemetry** to help improve the tool. Telemetry is:
+
+- ✅ **Opt-in** - Disabled by default
+- ✅ **Anonymous** - No personal data collected
+- ✅ **Local** - Data stored on your machine
+- ✅ **Transparent** - View anytime with `theneo-mcp telemetry status`
+
+```bash
+# Enable telemetry
+theneo-mcp telemetry enable
+
+# View what's collected
+theneo-mcp telemetry status
+
+# Disable anytime
+theneo-mcp telemetry disable
+```
+
+See [TELEMETRY.md](TELEMETRY.md) for complete privacy policy and details.
+
+## CI/CD
+
+The project includes comprehensive GitHub Actions workflows:
+
+- **CI**: Runs tests on Node 18, 20, 22 for every push/PR
+- **Release**: Automatically publishes to npm and updates Homebrew on version tags
+- **Quality**: Weekly security audits and dependency checks
+
+See [.github/workflows/](.github/workflows/) for workflow details.
+
 ## Contributing
 
 Contributions welcome! Please:
 
 1. Fork the repository
 2. Create a feature branch
-3. Make your changes with tests
-4. Run linting and type checks
+3. **Write tests for new functionality**
+4. Ensure all checks pass: `npm test`
 5. Submit a pull request
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed guidelines.
 
 ## License
 

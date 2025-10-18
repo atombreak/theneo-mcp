@@ -38,6 +38,16 @@ export const ConfigSchema = z.object({
    * Allows for multi-environment setups (dev, staging, prod)
    */
   profile: z.string().default("default").describe("Configuration profile name"),
+
+  /**
+   * Telemetry opt-in (disabled by default)
+   */
+  telemetryEnabled: z.boolean().default(false).describe("Enable anonymous usage telemetry"),
+
+  /**
+   * Optional telemetry endpoint for aggregated data
+   */
+  telemetryEndpoint: z.string().url().optional().describe("Telemetry endpoint URL"),
 });
 
 export type AppConfig = z.infer<typeof ConfigSchema>;

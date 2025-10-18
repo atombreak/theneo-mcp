@@ -12,10 +12,14 @@
     "dev:cli": "NODE_OPTIONS='--loader ts-node/esm' ts-node src/cli.ts",
     "build": "tsc && chmod +x dist/cli.js",
     "start": "node dist/server.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
     "lint": "eslint src/**/*.ts",
     "format": "prettier --write \"src/**/*.ts\" \"examples/**/*.md\"",
     "type-check": "tsc --noEmit",
-    "prepublishOnly": "npm run type-check && npm run lint && npm run build"
+    "prepublishOnly": "npm run type-check && npm run lint && npm run test && npm run build"
   },
   "keywords": [
     "theneo",
@@ -28,6 +32,14 @@
   ],
   "author": "",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/theneo/theneo-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/theneo/theneo-mcp/issues"
+  },
+  "homepage": "https://github.com/theneo/theneo-mcp#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.4",
     "@theneo/sdk": "^0.15.1",
@@ -43,10 +55,13 @@
     "@types/node": "^22.10.2",
     "@typescript-eslint/eslint-plugin": "^8.18.2",
     "@typescript-eslint/parser": "^8.18.2",
+    "@vitest/coverage-v8": "^1.2.0",
+    "@vitest/ui": "^1.2.0",
     "eslint": "^9.17.0",
     "prettier": "^3.4.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^1.2.0"
   },
   "engines": {
     "node": ">=18.0.0"

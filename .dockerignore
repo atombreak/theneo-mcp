@@ -1,0 +1,58 @@
+# Dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+dist
+*.tsbuildinfo
+
+# Tests
+src/__tests__
+coverage
+*.test.ts
+*.spec.ts
+vitest.config.ts
+
+# Environment and config
+.env
+.env.local
+.env.*.local
+.theneo-mcp.json
+.theneo-mcp.yaml
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# CI/CD
+.github
+
+# Documentation
+*.md
+!README.md
+docs
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Examples
+examples
+
+# Scripts
+scripts
+
+# Logs
+logs
+*.log
+
