@@ -104,7 +104,7 @@ jobs:
           cat > Formula/theneo-mcp.rb << 'EOF'
           class TheneoMcp < Formula
             desc "MCP server for Theneo SDK - API documentation automation"
-            homepage "https://github.com/theneo/theneo-mcp"
+            homepage "https://github.com/atombreak/theneo-mcp"
             url "${{ steps.fetch_tarball.outputs.url }}"
             sha256 "${{ steps.fetch_tarball.outputs.sha256 }}"
             license "MIT"

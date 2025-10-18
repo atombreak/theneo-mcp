@@ -4,10 +4,12 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
-[![npm version](https://badge.fury.io/js/theneo-mcp.svg)](https://www.npmjs.com/package/theneo-mcp)
-[![CI](https://github.com/theneo/theneo-mcp/workflows/CI/badge.svg)](https://github.com/theneo/theneo-mcp/actions)
-[![codecov](https://codecov.io/gh/theneo/theneo-mcp/branch/main/graph/badge.svg)](https://codecov.io/gh/theneo/theneo-mcp)
-[![Docker Pulls](https://img.shields.io/docker/pulls/theneo/theneo-mcp)](https://hub.docker.com/r/theneo/theneo-mcp)
+[![CI](https://github.com/atombreak/theneo-mcp/workflows/CI/badge.svg)](https://github.com/atombreak/theneo-mcp/actions)
+
+<!-- Uncomment when services are live -->
+<!-- [![npm version](https://badge.fury.io/js/theneo-mcp.svg)](https://www.npmjs.com/package/theneo-mcp) -->
+<!-- [![codecov](https://codecov.io/gh/theneo/theneo-mcp/branch/main/graph/badge.svg)](https://codecov.io/gh/theneo/theneo-mcp) -->
+<!-- [![Docker Pulls](https://img.shields.io/docker/pulls/theneo/theneo-mcp)](https://hub.docker.com/r/theneo/theneo-mcp) -->
 
 This MCP server exposes [Theneo's](https://theneo.io) API documentation platform through the [Model Context Protocol](https://modelcontextprotocol.io/), allowing AI assistants to create, update, and publish API documentation automatically.
 
@@ -26,6 +28,20 @@ Theneo MCP enables any AI assistant (Claude Desktop, VS Code Copilot, Cursor, et
 - 🚀 **AI-Powered**: Built-in AI description generation (fill, overwrite, or skip)
 - 🔄 **Smart Imports**: Merge, overwrite, or endpoints-only update strategies
 - 🌍 **Profile Support**: Manage multiple environments (dev, staging, prod)
+
+## Design Choices
+
+### Why SDK Over CLI?
+Direct SDK integration provides type safety, better error handling, and access to the full API surface without shell escaping issues.
+
+### Why OS Keychain?
+Secure at-rest storage for credentials without environment variables or plain-text files. Cross-platform support via keytar.
+
+### Why Profile Support?
+Multi-environment workflows (dev/staging/prod) are common. Profiles allow easy context switching without credential juggling.
+
+### Why MCP Protocol?
+MCP standardizes AI-tool integration. Write once, works with Claude, VS Code Copilot, Cursor, and future AI assistants.
 
 ## Installation
 
@@ -69,7 +85,7 @@ See [DOCKER.md](DOCKER.md) for detailed Docker usage.
 ### Local Development
 
 ```bash
-git clone https://github.com/theneo/theneo-mcp
+git clone https://github.com/atombreak/theneo-mcp.git
 cd theneo-mcp
 npm install
 npm run build
@@ -342,6 +358,19 @@ Use theneo_create_project with:
 - publish: true
 - isPublic: true
 - descriptionGeneration: "FILL"
+```
+
+**Example Response:**
+```json
+{
+  "projectId": "proj_abc123xyz",
+  "publishData": {
+    "projectKey": "my-api",
+    "companySlug": "acme-corp",
+    "publishedPageUrl": "https://app.theneo.io/acme-corp/my-api",
+    "baseUrlRequired": false
+  }
+}
 ```
 
 ### 4. `theneo_import_project_document`
@@ -837,7 +866,7 @@ jobs:
 ### Build from Source
 
 ```bash
-git clone https://github.com/atombreak/mcp-server
+git clone https://github.com/atombreak/theneo-mcp.git
 cd theneo-mcp
 npm install
 npm run build
@@ -946,14 +975,28 @@ npm publish
 ### What Gets Published
 
 ✅ **Included:**
-- `dist/` (compiled JavaScript)
-- `package.json`, `README.md`, `LICENSE`
+- Compiled JavaScript (`dist/`)
+- Package metadata (`package.json`)
+- Documentation (`README.md`, `LICENSE`)
 
 ❌ **Excluded** (via `.npmignore`):
-- `src/` (TypeScript source)
-- `.env` and secrets
-- Examples with sensitive data
-- Development configs
+- TypeScript source (`src/`)
+- Test files and coverage (`src/__tests__/`, `coverage/`, `*.test.ts`)
+- Environment files (`.env`, `.env.*`)
+- Example configurations with potential secrets (`.theneo-mcp.json`, `.theneo-mcp.yaml`)
+- Development configs (`tsconfig.json`, `vitest.config.ts`, `eslint.config.js`)
+- CI/CD configs (`.github/`, GitHub Actions workflows)
+- Docker files (`Dockerfile`, `.dockerignore`)
+- IDE settings (`.vscode/`, `.idea/`)
+
+**Security Note:** The `.npmignore` file is configured to exclude all potentially sensitive files. Always review before publishing:
+```bash
+# Preview what will be published
+npm pack --dry-run
+
+# Check for secrets in package
+tar -tzf theneo-mcp-*.tgz | grep -E '\.(env|key|pem|crt)'
+```
 
 ## Testing
 
@@ -1028,12 +1071,12 @@ MIT License - see [LICENSE](LICENSE) file for details
 - **Theneo Platform**: [https://theneo.io](https://theneo.io)
 - **Theneo SDK**: [https://www.npmjs.com/package/@theneo/sdk](https://www.npmjs.com/package/@theneo/sdk)
 - **Model Context Protocol**: [https://modelcontextprotocol.io](https://modelcontextprotocol.io)
-- **Issues**: [https://github.com/atombreak/mcp-server/issues](https://github.com/atombreak/mcp-server/issues)
+- **Issues**: [https://github.com/atombreak/theneo-mcp/issues](https://github.com/atombreak/theneo-mcp/issues)
 
 ## Support
 
 - **Documentation**: This README and [`examples/demo-prompts.md`](./examples/demo-prompts.md)
-- **Issues**: [GitHub Issues](https://github.com/atombreak/mcp-server/issues)
+- **Issues**: [GitHub Issues](https://github.com/atombreak/theneo-mcp/issues)
 - **Theneo Support**: [https://theneo.io/support](https://theneo.io/support)
 
 ---

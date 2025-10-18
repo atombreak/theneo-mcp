@@ -22,7 +22,7 @@ A complete, production-ready MCP (Model Context Protocol) server that exposes Th
 ### Core Components
 
 1. **MCP Server** (`src/server.ts`)
-   - 6 MCP tools exposing Theneo SDK operations
+   - 15 MCP tools exposing Theneo SDK operations
    - Comprehensive error handling
    - Progress logging for long operations
    - Type-safe request/response handling
@@ -48,16 +48,25 @@ A complete, production-ready MCP (Model Context Protocol) server that exposes Th
    - Automatic secret masking
    - MCP protocol compliance (stdout reserved)
 
-### Available MCP Tools
+### Available MCP Tools (15 Total)
 
 | Tool | Purpose | Key Features |
 |------|---------|-------------|
 | `theneo_list_workspaces` | List accessible workspaces | Simple authentication check |
+| `theneo_list_projects` | List projects in workspace | Filter by workspace name/key/ID |
 | `theneo_create_project` | Create new documentation project | File/URL/text/Postman import, AI generation |
 | `theneo_import_project_document` | Update existing project | Merge/overwrite/endpoints-only modes |
-| `theneo_publish_project` | Publish project | Returns published URL |
+| `theneo_publish_project` | Publish project | Returns published URL, version support |
 | `theneo_preview_link` | Get editor preview URL | Direct access to editor |
 | `theneo_wait_for_generation` | Wait for AI completion | Configurable timeout and polling |
+| `theneo_get_generation_status` | Check AI generation progress | Real-time status and percentage |
+| `theneo_delete_project` | Delete project permanently | By ID or name |
+| `theneo_export_project` | Export project documentation | OpenAPI, markdown, public view data |
+| `theneo_list_project_versions` | List all project versions | Version metadata and status |
+| `theneo_create_project_version` | Create new version | Copy from existing or start fresh |
+| `theneo_delete_project_version` | Delete version | Permanent removal |
+| `theneo_add_subscriber_to_version` | Subscribe email to updates | Version-specific notifications |
+| `theneo_list_postman_collections` | List Postman collections | Discovery for import |
 
 ## Security Features
 
@@ -94,7 +103,7 @@ A complete, production-ready MCP (Model Context Protocol) server that exposes Th
 ```
 theneo-mcp/
 ├── src/                      # TypeScript source
-│   ├── server.ts            # MCP server (6 tools)
+│   ├── server.ts            # MCP server (15 tools)
 │   ├── cli.ts               # CLI interface
 │   ├── config.ts            # Config schema
 │   ├── loadConfig.ts        # Multi-source loader
@@ -158,7 +167,7 @@ npm run prepublishOnly  # Pre-publish checks
 
 ```bash
 # Clone and setup
-git clone <repo>
+git clone https://github.com/atombreak/theneo-mcp.git
 cd theneo-mcp
 npm install
 npm run build
@@ -170,7 +179,7 @@ theneo-mcp creds save --apiKey YOUR_KEY
 theneo-mcp server
 ```
 
-### 2. Global Installation (Coming Soon)
+### 2. Global Installation
 
 ```bash
 # Install globally
@@ -227,7 +236,7 @@ The server is ready for:
 1. **README.md** (Comprehensive)
    - Installation instructions
    - Configuration guide (6 sources)
-   - Tool reference (all 6 tools)
+   - Tool reference (all 15 tools)
    - Security best practices
    - MCP integration guides
    - Troubleshooting
@@ -288,14 +297,14 @@ Before publishing to npm:
 
 ### Future Enhancements
 
-- [ ] Unit tests (Jest/Vitest)
-- [ ] Integration tests with mock API
-- [ ] GitHub Actions CI/CD
-- [ ] Additional tools (list projects, delete project, etc.)
+- [x] Unit tests (Vitest with 67/74 passing)
+- [x] Integration tests with mock API
+- [x] GitHub Actions CI/CD
+- [x] Additional tools (all 15 tools implemented)
+- [x] Metrics and telemetry (opt-in, privacy-first)
+- [x] Docker image (multi-stage, Alpine-based)
+- [x] Homebrew formula (automated via CI/CD)
 - [ ] Webhook support for CI/CD triggers
-- [ ] Metrics and telemetry (opt-in)
-- [ ] Docker image
-- [ ] Homebrew formula
 
 ## Key Differentiators
 

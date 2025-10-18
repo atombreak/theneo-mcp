@@ -34,12 +34,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/theneo/theneo-mcp.git"
+    "url": "https://github.com/atombreak/theneo-mcp.git"
   },
   "bugs": {
-    "url": "https://github.com/theneo/theneo-mcp/issues"
+    "url": "https://github.com/atombreak/theneo-mcp/issues"
   },
-  "homepage": "https://github.com/theneo/theneo-mcp#readme",
+  "homepage": "https://github.com/atombreak/theneo-mcp#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.4",
     "@theneo/sdk": "^0.15.1",

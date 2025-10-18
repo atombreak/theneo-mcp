@@ -10,7 +10,7 @@ Get up and running with Theneo MCP in under 5 minutes!
 
 ## Installation
 
-### Option 1: Global Installation (Coming Soon)
+### Option 1: Global Installation
 
 ```bash
 npm install -g theneo-mcp
@@ -19,7 +19,7 @@ npm install -g theneo-mcp
 ### Option 2: Use from Source
 
 ```bash
-git clone https://github.com/atombreak/mcp-server
+git clone https://github.com/atombreak/theneo-mcp.git
 cd theneo-mcp
 npm install
 npm run build
@@ -32,7 +32,17 @@ Choose one of these methods:
 ### Method 1: OS Keychain (Most Secure for Local Dev)
 
 ```bash
+# Save credentials
 theneo-mcp creds save --profile default --apiKey YOUR_API_KEY
+
+# Save for different environment
+theneo-mcp creds save --profile production --apiKey PROD_API_KEY
+
+# List all profiles
+theneo-mcp creds list
+
+# Remove credentials
+theneo-mcp creds rm --profile default
 ```
 
 ### Method 2: Environment Variable (Good for CI/CD)
@@ -40,6 +50,17 @@ theneo-mcp creds save --profile default --apiKey YOUR_API_KEY
 ```bash
 # Add to your ~/.bashrc, ~/.zshrc, or ~/.profile
 export THENEO_API_KEY=YOUR_API_KEY
+```
+
+### Switching Profiles
+
+```bash
+# Use specific profile when starting server
+theneo-mcp server --profile production
+
+# Or via environment variable
+export THENEO_PROFILE=production
+theneo-mcp server
 ```
 
 ### Method 3: Config File (Good for Teams)
@@ -200,7 +221,7 @@ If using from source, use the full path:
 
 ## Need Help?
 
-- **Issues**: [GitHub Issues](https://github.com/atombreak/mcp-server/issues)
+- **Issues**: [GitHub Issues](https://github.com/atombreak/theneo-mcp/issues)
 - **Documentation**: [Full README](./README.md)
 - **Theneo Support**: [https://theneo.io/support](https://theneo.io/support)
 

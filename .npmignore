@@ -22,8 +22,10 @@ tsconfig.json
 coverage/
 .nyc_output/
 tests/
+src/__tests__/
 *.test.ts
 *.spec.ts
+vitest.config.ts
 
 # CI/CD
 .github/
@@ -38,6 +40,7 @@ docs/
 .eslintrc.json
 .prettierrc
 .editorconfig
+eslint.config.js
 
 # OS files
 .DS_Store
@@ -51,4 +54,8 @@ logs/
 .theneo-mcp.json
 .theneo-mcp.yaml
 .theneo-mcp.yml
+
+Dockerfile
+.dockerignore
+docker-compose.yml
 
