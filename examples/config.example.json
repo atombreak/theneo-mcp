@@ -1,0 +1,32 @@
+{
+  "// Comment": "Example user configuration file for Theneo MCP",
+  "// Location": "Save to: ~/.config/theneo-mcp/config.json (Linux/macOS) or %AppData%/theneo-mcp/config.json (Windows)",
+  "// Security": "NEVER commit this file with your real API key to version control!",
+
+  "profile": "default",
+  "baseApiUrl": "https://api.theneo.io",
+  "baseAppUrl": "https://app.theneo.io",
+
+  "// apiKey": "DO NOT store your API key here! Use keychain instead:",
+  "// Command": "theneo-mcp creds save --profile default --apiKey your_actual_key",
+
+  "profiles": {
+    "default": {
+      "profile": "default"
+    },
+    "development": {
+      "profile": "development"
+    },
+    "production": {
+      "profile": "production"
+    }
+  },
+
+  "// Usage": [
+    "1. Copy this file to ~/.config/theneo-mcp/config.json",
+    "2. Store your API key securely: theneo-mcp creds save --apiKey YOUR_KEY",
+    "3. Start server: theneo-mcp server",
+    "4. Or use specific profile: theneo-mcp server --profile production"
+  ]
+}
+

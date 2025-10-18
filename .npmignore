@@ -1,0 +1,54 @@
+# Source files (publish only compiled dist/)
+src/
+tsconfig.json
+
+# Environment and secrets
+.env
+.env.*
+*.key
+*.pem
+*.crt
+*.pfx
+*.p12
+
+# Development files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
+coverage/
+.nyc_output/
+tests/
+*.test.ts
+*.spec.ts
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Documentation that shouldn't be published
+examples/
+docs/
+
+# Linting and formatting
+.eslintrc.json
+.prettierrc
+.editorconfig
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# RC files with potential secrets
+.theneo-mcp.json
+.theneo-mcp.yaml
+.theneo-mcp.yml
+

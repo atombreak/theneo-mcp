@@ -1,0 +1,50 @@
+# Example Theneo MCP project configuration file
+# Save this as .theneo-mcp.yaml or .theneo-mcp.json in your project root
+# 
+# IMPORTANT: Never commit API keys to version control!
+# Only store non-sensitive configuration here.
+
+# Default profile to use (can be overridden with --profile flag)
+profile: default
+
+# API URLs (usually you don't need to change these)
+baseApiUrl: https://api.theneo.io
+baseAppUrl: https://app.theneo.io
+
+# API key - DO NOT store your real API key here in version control!
+# Instead, use one of these secure methods:
+# 1. Environment variable: THENEO_API_KEY=your_key
+# 2. OS keychain: theneo-mcp creds save --apiKey your_key
+# 3. User config: ~/.config/theneo-mcp/config.yaml
+# apiKey: your_api_key_here
+
+# Multi-environment support with profiles
+# Each profile can override the default settings
+profiles:
+  # Development profile
+  development:
+    profile: development
+    # API key should come from environment or keychain
+    # baseApiUrl: https://api.theneo.io
+    # baseAppUrl: https://app.theneo.io
+
+  # Staging profile
+  staging:
+    profile: staging
+    # Configure staging-specific settings here
+
+  # Production profile
+  production:
+    profile: production
+    # Configure production-specific settings here
+
+# Usage examples:
+# 1. Use default profile:
+#    theneo-mcp server
+#
+# 2. Use specific profile:
+#    theneo-mcp server --profile production
+#
+# 3. Override from environment:
+#    THENEO_PROFILE=staging theneo-mcp server
+

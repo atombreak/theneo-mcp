@@ -1,0 +1,221 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "USPTO Data Set API",
+    "description": "The Data Set API (DSAPI) allows the public users to discover and search USPTO exported data sets. This is a generic API that allows USPTO users to make any CSV based data files searchable through API. With the introduction of this API, users can see what data sets are available for consumption by them, and can also search for specific data set contents.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Open Data Portal",
+      "url": "https://developer.uspto.gov",
+      "email": "developer@uspto.gov"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://developer.uspto.gov/ds-api"
+    }
+  ],
+  "tags": [
+    {
+      "name": "metadata",
+      "description": "Find out about the data sets"
+    },
+    {
+      "name": "search",
+      "description": "Search a data set"
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "tags": ["metadata"],
+        "operationId": "list-data-sets",
+        "summary": "List available data sets",
+        "description": "Returns a list of data sets available for searching",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": "integer"
+                    },
+                    "apis": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "apiKey": {
+                            "type": "string",
+                            "description": "API key to use for searching this dataset"
+                          },
+                          "apiVersionNumber": {
+                            "type": "string",
+                            "description": "Version number"
+                          },
+                          "apiUrl": {
+                            "type": "string",
+                            "format": "uri",
+                            "description": "Full URL to access the search endpoint"
+                          },
+                          "apiDocumentationUrl": {
+                            "type": "string",
+                            "format": "uri",
+                            "description": "URL to documentation"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{dataset}/{version}/fields": {
+      "get": {
+        "tags": ["metadata"],
+        "summary": "Get fields for a data set",
+        "operationId": "list-searchable-fields",
+        "description": "Returns the list of searchable fields for a given data set",
+        "parameters": [
+          {
+            "name": "dataset",
+            "in": "path",
+            "required": true,
+            "description": "Name of the dataset",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "description": "Version of the dataset",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "fieldName": {
+                        "type": "string"
+                      },
+                      "fieldType": {
+                        "type": "string"
+                      },
+                      "fieldDescription": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Dataset not found"
+          }
+        }
+      }
+    },
+    "/{dataset}/{version}/records": {
+      "post": {
+        "tags": ["search"],
+        "summary": "Search data set records",
+        "operationId": "perform-search",
+        "description": "Search for records in a data set using a query",
+        "parameters": [
+          {
+            "name": "dataset",
+            "in": "path",
+            "required": true,
+            "description": "Name of the dataset",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "description": "Version of the dataset",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "criteria": {
+                    "type": "string",
+                    "description": "Search criteria using field names"
+                  },
+                  "start": {
+                    "type": "integer",
+                    "description": "Starting record number (for pagination)"
+                  },
+                  "rows": {
+                    "type": "integer",
+                    "description": "Number of rows to return"
+                  }
+                },
+                "required": ["criteria"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful search response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": "integer"
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid search criteria"
+          },
+          "404": {
+            "description": "Dataset not found"
+          }
+        }
+      }
+    }
+  }
+}
+
