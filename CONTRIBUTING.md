@@ -315,8 +315,8 @@ When adding features:
 
 ## Questions?
 
-- **Issues**: [GitHub Issues](https://github.com/theneo/mcp-server/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/theneo/mcp-server/discussions)
+- **Issues**: [GitHub Issues](https://github.com/atombreak/mcp-server/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/atombreak/mcp-server/discussions)
 
 ## License
 

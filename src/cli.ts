@@ -54,8 +54,8 @@ CONFIGURATION:
   Get your API key: https://app.theneo.io/
 
 MORE INFO:
-  Documentation: https://github.com/theneo/mcp-server
-  Issues: https://github.com/theneo/mcp-server/issues
+  Documentation: https://github.com/atombreak/mcp-server
+  Issues: https://github.com/atombreak/mcp-server/issues
 `;
 
 async function handleCredsCommand(subcommand: string, argv: minimist.ParsedArgs) {

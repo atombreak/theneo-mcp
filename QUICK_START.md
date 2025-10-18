@@ -10,7 +10,7 @@ Get up and running with Theneo MCP in under 5 minutes!
 
 ## Installation
 
-### Option 1: Global Installation (Recommended)
+### Option 1: Global Installation (Coming Soon)
 
 ```bash
 npm install -g theneo-mcp
@@ -19,7 +19,7 @@ npm install -g theneo-mcp
 ### Option 2: Use from Source
 
 ```bash
-git clone https://github.com/theneo/mcp-server
+git clone https://github.com/atombreak/mcp-server
 cd theneo-mcp
 npm install
 npm run build
@@ -200,7 +200,7 @@ If using from source, use the full path:
 
 ## Need Help?
 
-- **Issues**: [GitHub Issues](https://github.com/theneo/mcp-server/issues)
+- **Issues**: [GitHub Issues](https://github.com/atombreak/mcp-server/issues)
 - **Documentation**: [Full README](./README.md)
 - **Theneo Support**: [https://theneo.io/support](https://theneo.io/support)
 

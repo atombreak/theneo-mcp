@@ -25,7 +25,7 @@ Theneo MCP enables any AI assistant (Claude Desktop, VS Code Copilot, Cursor, et
 
 ## Installation
 
-### Global Installation (Recommended)
+### Global Installation (Coming Soon)
 
 ```bash
 npm install -g theneo-mcp
@@ -34,7 +34,7 @@ npm install -g theneo-mcp
 ### Local Development
 
 ```bash
-git clone https://github.com/theneo/mcp-server
+git clone https://github.com/atombreak/mcp-server
 cd theneo-mcp
 npm install
 npm run build
@@ -802,7 +802,7 @@ jobs:
 ### Build from Source
 
 ```bash
-git clone https://github.com/theneo/mcp-server
+git clone https://github.com/atombreak/mcp-server
 cd theneo-mcp
 npm install
 npm run build
@@ -939,12 +939,12 @@ MIT License - see [LICENSE](LICENSE) file for details
 - **Theneo Platform**: [https://theneo.io](https://theneo.io)
 - **Theneo SDK**: [https://www.npmjs.com/package/@theneo/sdk](https://www.npmjs.com/package/@theneo/sdk)
 - **Model Context Protocol**: [https://modelcontextprotocol.io](https://modelcontextprotocol.io)
-- **Issues**: [https://github.com/theneo/mcp-server/issues](https://github.com/theneo/mcp-server/issues)
+- **Issues**: [https://github.com/atombreak/mcp-server/issues](https://github.com/atombreak/mcp-server/issues)
 
 ## Support
 
 - **Documentation**: This README and [`examples/demo-prompts.md`](./examples/demo-prompts.md)
-- **Issues**: [GitHub Issues](https://github.com/theneo/mcp-server/issues)
+- **Issues**: [GitHub Issues](https://github.com/atombreak/mcp-server/issues)
 - **Theneo Support**: [https://theneo.io/support](https://theneo.io/support)
 
 ---

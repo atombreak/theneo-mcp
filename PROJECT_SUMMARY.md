@@ -170,7 +170,7 @@ theneo-mcp creds save --apiKey YOUR_KEY
 theneo-mcp server
 ```
 
-### 2. Global Installation
+### 2. Global Installation (Coming Soon)
 
 ```bash
 # Install globally
