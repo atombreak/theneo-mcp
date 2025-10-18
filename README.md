@@ -13,7 +13,8 @@ Theneo MCP enables any AI assistant (Claude Desktop, VS Code Copilot, Cursor, et
 
 ### Key Features
 
-- 🤖 **AI-First**: Works with any MCP-compatible AI assistant
+- 💬 **Natural Language**: Just talk—no need to memorize tool names or parameters!
+- 🤖 **AI-First**: Works with any MCP-compatible AI assistant (Claude, VS Code, Cursor)
 - 🔐 **Enterprise Security**: Multi-source config, OS keychain support, secret masking
 - 🎯 **6 Core Tools**: List workspaces, create projects, import specs, publish, preview, and wait for AI generation
 - 📦 **Flexible Input**: Supports OpenAPI/Swagger files, URLs, raw text, and Postman collections
@@ -109,20 +110,26 @@ Add to Cursor settings (Settings → MCP):
 
 ### 4. Test It Out
 
-In your AI assistant, try:
+In your AI assistant, just talk naturally:
+
 ```
-Use theneo_list_workspaces to show me my Theneo workspaces
+Show me my Theneo workspaces
 ```
 
 Then create a project:
 ```
-Use theneo_create_project to create a project called "Demo API" with:
-- name: "Demo API"
-- link: "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/examples/v3.0/petstore.json"
-- publish: true
-- isPublic: true
-- descriptionGeneration: "FILL"
+Create a new project called "Demo API" using the Petstore OpenAPI example 
+from GitHub. Make it public and enable AI descriptions.
 ```
+
+Or if you prefer being explicit:
+```
+Use theneo_create_project with name "Demo API", 
+link "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/examples/v3.0/petstore.json",
+publish true, isPublic true, and descriptionGeneration "FILL"
+```
+
+💡 **Pro tip**: You don't need to memorize tool names or parameters—just describe what you want in plain English!
 
 ## Configuration
 
@@ -214,15 +221,26 @@ THENEO_PROFILE=production theneo-mcp server
 
 ## Available Tools
 
+💡 **Tip**: You don't need to use the exact tool names! Just talk naturally to your AI assistant, and it will figure out which tool to call.
+
 ### 1. `theneo_list_workspaces`
 
 List all workspaces accessible to your account.
 
 **Parameters:** None
 
-**Example:**
+**Natural Language Examples:**
 ```
-Use theneo_list_workspaces to show my workspaces
+Show me my Theneo workspaces
+
+What workspaces do I have access to?
+
+List all my Theneo workspaces
+```
+
+**Explicit Tool Call (for testing/debugging):**
+```
+Use theneo_list_workspaces
 ```
 
 ### 2. `theneo_create_project`
@@ -242,12 +260,25 @@ Create a new API documentation project with optional spec import and AI generati
   - `text` (string): Raw OpenAPI/Swagger spec
   - `postmanApiKey` + `postmanCollectionIds`: Import from Postman
 
-**Example:**
+**Natural Language Examples:**
 ```
-Use theneo_create_project to create:
+Create a new project called "Payment API" from this OpenAPI spec: 
+https://example.com/openapi.json and make it public with AI-generated descriptions
+
+I need to create API documentation for my REST API. The spec is at 
+./specs/api.yaml. Name it "User Service API" and enable AI descriptions.
+
+Can you create a Theneo project named "Stripe Clone" using the Petstore 
+example from GitHub? Make it public and publish it immediately.
+```
+
+**Explicit Tool Call (for testing/debugging):**
+```
+Use theneo_create_project with:
 - name: "My API"
 - link: "https://example.com/openapi.json"
 - publish: true
+- isPublic: true
 - descriptionGeneration: "FILL"
 ```
 
@@ -261,9 +292,21 @@ Import or update API documentation in an existing project.
 - `importOption` (enum, optional): `MERGE` | `OVERWRITE` | `ENDPOINTS_ONLY`
 - **Data sources** (same as create_project, one required)
 
-**Example:**
+**Natural Language Examples:**
 ```
-Use theneo_import_project_document:
+Update project proj_abc123 with my latest API spec from ./api/openapi.yaml 
+and merge it with existing content
+
+I need to import a new version of my API into project proj_xyz. 
+Use this URL: https://api.example.com/openapi.json and overwrite everything.
+
+Import the updated Postman collection into my project and publish it. 
+The project ID is proj_456 and I want to merge the changes.
+```
+
+**Explicit Tool Call (for testing/debugging):**
+```
+Use theneo_import_project_document with:
 - projectId: "proj_123"
 - file: "./openapi.json"
 - importOption: "MERGE"
@@ -277,7 +320,16 @@ Publish a project to make it live.
 **Parameters:**
 - `projectId` (string, required): Project to publish
 
-**Example:**
+**Natural Language Examples:**
+```
+Publish project proj_123
+
+Make my project proj_abc live
+
+Publish the documentation for project ID proj_xyz456
+```
+
+**Explicit Tool Call (for testing/debugging):**
 ```
 Use theneo_publish_project with projectId "proj_123"
 ```
@@ -289,7 +341,16 @@ Get the editor preview URL for a project.
 **Parameters:**
 - `projectId` (string, required): Project ID
 
-**Example:**
+**Natural Language Examples:**
+```
+Get me the preview link for project proj_123
+
+Show me where I can edit project proj_abc
+
+What's the URL to view project proj_xyz in the editor?
+```
+
+**Explicit Tool Call (for testing/debugging):**
 ```
 Use theneo_preview_link for project "proj_123"
 ```
@@ -303,14 +364,48 @@ Wait for AI description generation to complete.
 - `retryTimeMs` (number, optional): Polling interval (default: 2500)
 - `maxWaitTimeMs` (number, optional): Max wait time (default: 120000)
 
-**Example:**
+**Natural Language Examples:**
+```
+Wait for the AI to finish generating descriptions for project proj_123
+
+Check if AI generation is complete for my project proj_abc
+
+Keep checking until the AI descriptions are done for project proj_xyz
+```
+
+**Explicit Tool Call (for testing/debugging):**
 ```
 Use theneo_wait_for_generation for project "proj_123"
 ```
 
 ## Demo Script (End-to-End)
 
-This 5-minute demo shows the complete workflow:
+This 5-minute demo shows the complete workflow. You can use either **natural language** or **explicit tool calls**.
+
+### 🗣️ Natural Language Version (Recommended)
+
+Just talk naturally to your AI assistant:
+
+```
+Step 1: Show me my Theneo workspaces
+
+Step 2: Create a new project called "USPTO API Documentation" using this OpenAPI spec:
+https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/examples/v3.0/uspto.json
+Make it public, publish it immediately, and enable AI-generated descriptions to fill in missing content.
+
+Step 3: Wait for the AI description generation to complete for that project
+
+Step 4: Get me the preview link so I can view it in the editor
+
+Step 5: Now update the project with the local file ./examples/sample-openapi.json
+and merge it with the existing content, then publish it
+
+Step 6: Finally, publish the project and show me the published URL
+```
+
+### 🔧 Explicit Tool Calls Version (For Testing)
+
+If you want precise control or are debugging:
 
 ```
 Step 1: List workspaces
@@ -339,6 +434,23 @@ Use theneo_import_project_document with:
 
 Step 6: Get final published URL
 Use theneo_publish_project with the project ID
+```
+
+### 💡 Real-World Conversation Example
+
+```
+You: "Hey, can you help me set up documentation for my API?"
+
+AI: "Of course! Do you have an OpenAPI spec?"
+
+You: "Yes, it's at https://api.mycompany.com/openapi.json"
+
+AI: "Great! What would you like to name the project?"
+
+You: "Call it 'MyCompany API v2' and make it public with AI descriptions"
+
+AI: *[Creates project, waits for AI, shows preview link]*
+"Done! Your documentation is live at [URL]. Would you like to make any changes?"
 ```
 
 More examples in [`examples/demo-prompts.md`](./examples/demo-prompts.md).
