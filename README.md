@@ -17,7 +17,7 @@ Theneo MCP enables any AI assistant (Claude Desktop, VS Code Copilot, Cursor, et
 - 🎯 **Name-Based References**: Reference projects and workspaces by name instead of IDs—AI looks them up automatically!
 - 🤖 **AI-First**: Works with any MCP-compatible AI assistant (Claude, VS Code, Cursor)
 - 🔐 **Enterprise Security**: Multi-source config, OS keychain support, secret masking
-- 🛠️ **7 Core Tools**: List workspaces/projects, create, import, publish, preview, and wait for AI generation
+- 🛠️ **15 Powerful Tools**: Complete project lifecycle management—workspaces, projects, versions, exports, and more
 - 📦 **Flexible Input**: Supports OpenAPI/Swagger files, URLs, raw text, and Postman collections
 - 🚀 **AI-Powered**: Built-in AI description generation (fill, overwrite, or skip)
 - 🔄 **Smart Imports**: Merge, overwrite, or endpoints-only update strategies
@@ -346,7 +346,7 @@ Use theneo_import_project_document with:
 
 ### 5. `theneo_publish_project`
 
-Publish a project to make it live. **You can reference both project and workspace by name**.
+Publish a project to make it live. **You can reference both project and workspace by name**. Optionally specify a version to publish.
 
 **Parameters:**
 - `projectId` (string, optional): Project ID
@@ -354,6 +354,7 @@ Publish a project to make it live. **You can reference both project and workspac
 - `workspaceId` (string, optional): Workspace ID (helps when using projectName)
 - `workspaceKey` (string, optional): Workspace key/slug (helps when using projectName)
 - `workspaceName` (string, optional): Workspace name (helps when using projectName)
+- `versionId` (string, optional): Version ID to publish (publishes default version if not specified)
 
 **Natural Language Examples:**
 ```
@@ -419,6 +420,211 @@ Keep checking until the AI descriptions are done for "My Company API" in "Public
 **Explicit Tool Call (for testing/debugging):**
 ```
 Use theneo_wait_for_generation for project "proj_123"
+```
+
+### 8. `theneo_get_generation_status`
+
+Get the current status and progress of AI description generation for a project. **You can reference both project and workspace by name**.
+
+**Parameters:**
+- `projectId` (string, optional): Project ID
+- `projectName` (string, optional): Project name (alternative to projectId)
+- `workspaceId` (string, optional): Workspace ID (helps when using projectName)
+- `workspaceKey` (string, optional): Workspace key/slug (helps when using projectName)
+- `workspaceName` (string, optional): Workspace name (helps when using projectName)
+
+**Natural Language Examples:**
+```
+Check the AI generation status for "Payment API" in "Engineering"
+
+What's the progress of AI description generation for "User Service"?
+
+Show me the generation status of "My Company API" in the "Public APIs" workspace
+```
+
+**Explicit Tool Call (for testing/debugging):**
+```
+Use theneo_get_generation_status with projectId "proj_123"
+```
+
+### 9. `theneo_delete_project`
+
+Permanently delete a project. **You can reference both project and workspace by name**. ⚠️ This action cannot be undone.
+
+**Parameters:**
+- `projectId` (string, optional): Project ID
+- `projectName` (string, optional): Project name (alternative to projectId)
+- `workspaceId` (string, optional): Workspace ID (helps when using projectName)
+- `workspaceKey` (string, optional): Workspace key/slug (helps when using projectName)
+- `workspaceName` (string, optional): Workspace name (helps when using projectName)
+
+**Natural Language Examples:**
+```
+Delete the "Old API" project from my "Engineering" workspace
+
+I need to remove the "Test Project" from the "Staging" workspace
+
+Can you delete "Legacy API v1" in my "Production" workspace?
+```
+
+**Explicit Tool Call (for testing/debugging):**
+```
+Use theneo_delete_project with projectId "proj_123"
+```
+
+### 10. `theneo_list_project_versions`
+
+List all versions of a specific project. **You can reference both project and workspace by name**.
+
+**Parameters:**
+- `projectId` (string, optional): Project ID
+- `projectName` (string, optional): Project name (alternative to projectId)
+- `workspaceId` (string, optional): Workspace ID (helps when using projectName)
+- `workspaceKey` (string, optional): Workspace key/slug (helps when using projectName)
+- `workspaceName` (string, optional): Workspace name (helps when using projectName)
+
+**Natural Language Examples:**
+```
+Show me all versions of the "Payment API" project in "Engineering"
+
+List versions for "User Service" in the "Production" workspace
+
+What versions does the "My Company API" have?
+```
+
+**Explicit Tool Call (for testing/debugging):**
+```
+Use theneo_list_project_versions with projectId "proj_123"
+```
+
+### 11. `theneo_create_project_version`
+
+Create a new version of a project. **You can reference both project and workspace by name**.
+
+**Parameters:**
+- `name` (string, required): Version name
+- `projectId` (string, optional): Project ID
+- `projectName` (string, optional): Project name (alternative to projectId)
+- `workspaceId` (string, optional): Workspace ID (helps when using projectName)
+- `workspaceKey` (string, optional): Workspace key/slug (helps when using projectName)
+- `workspaceName` (string, optional): Workspace name (helps when using projectName)
+- `previousVersionId` (string, optional): Previous version ID to copy from
+- `isNewVersion` (boolean, optional): Whether this is a new version
+- `isEmpty` (boolean, optional): Whether the version should be empty
+- `isDefault` (boolean, optional): Whether this should be the default version
+
+**Natural Language Examples:**
+```
+Create a new version "v2.0" for "Payment API" in the "Engineering" workspace
+
+Add version "2024-Q1" to the "User Service" project in "Production"
+
+Create an empty version called "v3.0-beta" for "My Company API"
+```
+
+**Explicit Tool Call (for testing/debugging):**
+```
+Use theneo_create_project_version with:
+- name: "v2.0"
+- projectId: "proj_123"
+```
+
+### 12. `theneo_delete_project_version`
+
+Delete a specific version of a project. ⚠️ This action cannot be undone.
+
+**Parameters:**
+- `versionId` (string, required): Version ID to delete
+
+**Natural Language Examples:**
+```
+Delete version "ver_abc123" from the project
+
+Remove the beta version with ID ver_xyz789
+
+I need to delete version ver_old456
+```
+
+**Explicit Tool Call (for testing/debugging):**
+```
+Use theneo_delete_project_version with versionId "ver_123"
+```
+
+### 13. `theneo_add_subscriber_to_version`
+
+Add an email subscriber to receive updates for a specific project version.
+
+**Parameters:**
+- `email` (string, required): Email address to subscribe
+- `projectVersionId` (string, required): Project version ID
+
+**Natural Language Examples:**
+```
+Add john@company.com as a subscriber to version ver_abc123
+
+Subscribe jane.doe@example.com to receive updates for version ver_xyz789
+
+I want to add team@company.com to the subscriber list for version ver_def456
+```
+
+**Explicit Tool Call (for testing/debugging):**
+```
+Use theneo_add_subscriber_to_version with:
+- email: "user@example.com"
+- projectVersionId: "ver_123"
+```
+
+### 14. `theneo_export_project`
+
+Export a project's documentation. **You can reference both project and workspace by name**.
+
+**Parameters:**
+- `projectId` (string, optional): Project ID
+- `projectName` (string, optional): Project name (alternative to projectId)
+- `workspaceId` (string, optional): Workspace ID (helps when using projectName)
+- `workspaceKey` (string, optional): Workspace key/slug (helps when using projectName)
+- `workspaceName` (string, optional): Workspace name (helps when using projectName)
+- `versionId` (string, optional): Version ID to export
+- `dir` (string, optional): Directory to save export
+- `noGeneration` (boolean, optional): Skip AI generation
+- `shouldGetPublicViewData` (boolean, optional): Get public view data
+- `openapi` (boolean, optional): Export as OpenAPI format
+
+**Natural Language Examples:**
+```
+Export the "Payment API" project from the "Engineering" workspace as OpenAPI
+
+Download the documentation for "User Service" in "Production" to ./exports
+
+Export "My Company API" with public view data
+```
+
+**Explicit Tool Call (for testing/debugging):**
+```
+Use theneo_export_project with:
+- projectId: "proj_123"
+- openapi: true
+```
+
+### 15. `theneo_list_postman_collections`
+
+List all Postman collections accessible with a provided Postman API key.
+
+**Parameters:**
+- `postmanApiKey` (string, required): Postman API key
+
+**Natural Language Examples:**
+```
+Show me my Postman collections using this API key: pmak_xyz123
+
+List all Postman collections I have access to
+
+What Postman collections are available with my API key?
+```
+
+**Explicit Tool Call (for testing/debugging):**
+```
+Use theneo_list_postman_collections with postmanApiKey "pmak_xyz123"
 ```
 
 ## Demo Script (End-to-End)
@@ -522,7 +728,10 @@ The AI will automatically:
 **This works for:**
 - ✅ Workspace references: ID, key (slug), or name
 - ✅ Project references: ID or name
-- ✅ All operations: create, import, publish, preview, wait for generation
+- ✅ All project operations: create, import, publish, preview, delete, export
+- ✅ Version management: list, create, delete versions
+- ✅ AI generation: wait for completion, check status
+- ✅ External integrations: list Postman collections, add subscribers
 
 **No more copying and pasting cryptic IDs!**
 

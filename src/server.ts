@@ -298,7 +298,7 @@ const ImportProjectDocumentTool: Tool = {
 // Publish Project Tool
 const PublishProjectTool: Tool = {
   name: "theneo_publish_project",
-  description: "Publish a project to make it available at its public URL. You can specify the project by ID or name, and workspace by ID, key, or name.",
+  description: "Publish a project to make it available at its public URL. You can specify the project by ID or name, and workspace by ID, key, or name. Optionally specify a version to publish.",
   inputSchema: {
     type: "object",
     properties: {
@@ -307,6 +307,7 @@ const PublishProjectTool: Tool = {
       workspaceId: { type: "string", description: "Workspace ID (optional, helps when using projectName)" },
       workspaceKey: { type: "string", description: "Workspace key/slug (optional, helps when using projectName)" },
       workspaceName: { type: "string", description: "Workspace name (optional, helps when using projectName)" },
+      versionId: { type: "string", description: "Version ID to publish (optional, publishes default version if not specified)" },
     },
   },
 };
@@ -343,6 +344,173 @@ const WaitForGenerationTool: Tool = {
       retryTimeMs: { type: "number", description: "Polling interval in ms", default: 2500 },
       maxWaitTimeMs: { type: "number", description: "Maximum wait time in ms", default: 120000 },
     },
+  },
+};
+
+// Get Description Generation Status Tool
+const GetDescriptionGenerationStatusTool: Tool = {
+  name: "theneo_get_generation_status",
+  description:
+    "Get the current status of AI description generation for a project. Returns the generation progress percentage and status. You can specify the project by ID or name, and workspace by ID, key, or name.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      projectId: { type: "string", description: "Project ID (provide either projectId or projectName)" },
+      projectName: { type: "string", description: "Project name (provide either projectId or projectName)" },
+      workspaceId: { type: "string", description: "Workspace ID (optional, helps when using projectName)" },
+      workspaceKey: { type: "string", description: "Workspace key/slug (optional, helps when using projectName)" },
+      workspaceName: { type: "string", description: "Workspace name (optional, helps when using projectName)" },
+    },
+  },
+};
+
+// Delete Project Tool
+const DeleteProjectTool: Tool = {
+  name: "theneo_delete_project",
+  description:
+    "Delete a project permanently. You can specify the project by ID or name, and workspace by ID, key, or name. This action cannot be undone.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      projectId: { type: "string", description: "Project ID (provide either projectId or projectName)" },
+      projectName: { type: "string", description: "Project name (provide either projectId or projectName)" },
+      workspaceId: { type: "string", description: "Workspace ID (optional, helps when using projectName)" },
+      workspaceKey: { type: "string", description: "Workspace key/slug (optional, helps when using projectName)" },
+      workspaceName: { type: "string", description: "Workspace name (optional, helps when using projectName)" },
+    },
+  },
+};
+
+// List Project Versions Tool
+const ListProjectVersionsTool: Tool = {
+  name: "theneo_list_project_versions",
+  description:
+    "List all versions of a project. You can specify the project by ID or name, and workspace by ID, key, or name.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      projectId: { type: "string", description: "Project ID (provide either projectId or projectName)" },
+      projectName: { type: "string", description: "Project name (provide either projectId or projectName)" },
+      workspaceId: { type: "string", description: "Workspace ID (optional, helps when using projectName)" },
+      workspaceKey: { type: "string", description: "Workspace key/slug (optional, helps when using projectName)" },
+      workspaceName: { type: "string", description: "Workspace name (optional, helps when using projectName)" },
+    },
+  },
+};
+
+// Create Project Version Tool
+const CreateProjectVersionSchema = z.object({
+  name: z.string().describe("Version name"),
+  projectId: z.string().optional().describe("Project ID (provide either projectId or projectName)"),
+  projectName: z.string().optional().describe("Project name (provide either projectId or projectName)"),
+  workspaceId: z.string().optional().describe("Workspace ID (optional, helps when using projectName)"),
+  workspaceKey: z.string().optional().describe("Workspace key/slug (optional, helps when using projectName)"),
+  workspaceName: z.string().optional().describe("Workspace name (optional, helps when using projectName)"),
+  previousVersionId: z.string().optional().describe("Previous version ID to copy from"),
+  isNewVersion: z.boolean().optional().describe("Whether this is a new version"),
+  isEmpty: z.boolean().optional().describe("Whether the version should be empty"),
+  isDefault: z.boolean().optional().describe("Whether this should be the default version"),
+});
+
+const CreateProjectVersionTool: Tool = {
+  name: "theneo_create_project_version",
+  description:
+    "Create a new version of a project. You can specify the project by ID or name, and workspace by ID, key, or name.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      name: { type: "string", description: "Version name" },
+      projectId: { type: "string", description: "Project ID (provide either projectId or projectName)" },
+      projectName: { type: "string", description: "Project name (provide either projectId or projectName)" },
+      workspaceId: { type: "string", description: "Workspace ID (optional, helps when using projectName)" },
+      workspaceKey: { type: "string", description: "Workspace key/slug (optional, helps when using projectName)" },
+      workspaceName: { type: "string", description: "Workspace name (optional, helps when using projectName)" },
+      previousVersionId: { type: "string", description: "Previous version ID to copy from" },
+      isNewVersion: { type: "boolean", description: "Whether this is a new version" },
+      isEmpty: { type: "boolean", description: "Whether the version should be empty" },
+      isDefault: { type: "boolean", description: "Whether this should be the default version" },
+    },
+    required: ["name"],
+  },
+};
+
+// Delete Project Version Tool
+const DeleteProjectVersionTool: Tool = {
+  name: "theneo_delete_project_version",
+  description: "Delete a specific version of a project. This action cannot be undone.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      versionId: { type: "string", description: "Version ID to delete" },
+    },
+    required: ["versionId"],
+  },
+};
+
+// Add Subscriber to Project Version Tool
+const AddSubscriberToProjectVersionSchema = z.object({
+  email: z.string().email().describe("Email address to subscribe"),
+  projectVersionId: z.string().describe("Project version ID"),
+});
+
+const AddSubscriberToProjectVersionTool: Tool = {
+  name: "theneo_add_subscriber_to_version",
+  description: "Add an email subscriber to receive updates for a specific project version.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      email: { type: "string", description: "Email address to subscribe" },
+      projectVersionId: { type: "string", description: "Project version ID" },
+    },
+    required: ["email", "projectVersionId"],
+  },
+};
+
+// Export Project Tool
+const ExportProjectSchema = z.object({
+  projectId: z.string().optional().describe("Project ID (provide either projectId or projectName)"),
+  projectName: z.string().optional().describe("Project name (provide either projectId or projectName)"),
+  workspaceId: z.string().optional().describe("Workspace ID (optional, helps when using projectName)"),
+  workspaceKey: z.string().optional().describe("Workspace key/slug (optional, helps when using projectName)"),
+  workspaceName: z.string().optional().describe("Workspace name (optional, helps when using projectName)"),
+  versionId: z.string().optional().describe("Version ID to export"),
+  dir: z.string().optional().describe("Directory to save export"),
+  noGeneration: z.boolean().optional().describe("Skip AI generation"),
+  shouldGetPublicViewData: z.boolean().optional().describe("Get public view data"),
+  openapi: z.boolean().optional().describe("Export as OpenAPI format"),
+});
+
+const ExportProjectTool: Tool = {
+  name: "theneo_export_project",
+  description:
+    "Export a project's documentation. You can specify the project by ID or name, and workspace by ID, key, or name. Returns the exported content.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      projectId: { type: "string", description: "Project ID (provide either projectId or projectName)" },
+      projectName: { type: "string", description: "Project name (provide either projectId or projectName)" },
+      workspaceId: { type: "string", description: "Workspace ID (optional, helps when using projectName)" },
+      workspaceKey: { type: "string", description: "Workspace key/slug (optional, helps when using projectName)" },
+      workspaceName: { type: "string", description: "Workspace name (optional, helps when using projectName)" },
+      versionId: { type: "string", description: "Version ID to export" },
+      dir: { type: "string", description: "Directory to save export" },
+      noGeneration: { type: "boolean", description: "Skip AI generation" },
+      shouldGetPublicViewData: { type: "boolean", description: "Get public view data" },
+      openapi: { type: "boolean", description: "Export as OpenAPI format" },
+    },
+  },
+};
+
+// List Postman Collections Tool
+const ListPostmanCollectionsTool: Tool = {
+  name: "theneo_list_postman_collections",
+  description: "List all Postman collections accessible with the provided Postman API key.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      postmanApiKey: { type: "string", description: "Postman API key" },
+    },
+    required: ["postmanApiKey"],
   },
 };
 
@@ -392,6 +560,14 @@ async function main() {
         PublishProjectTool,
         PreviewLinkTool,
         WaitForGenerationTool,
+        GetDescriptionGenerationStatusTool,
+        DeleteProjectTool,
+        ListProjectVersionsTool,
+        CreateProjectVersionTool,
+        DeleteProjectVersionTool,
+        AddSubscriberToProjectVersionTool,
+        ExportProjectTool,
+        ListPostmanCollectionsTool,
       ],
     };
   });
@@ -712,12 +888,13 @@ async function main() {
         }
 
         case "theneo_publish_project": {
-          const { projectId: inputProjectId, projectName, workspaceId: inputWorkspaceId, workspaceKey, workspaceName } = args as {
+          const { projectId: inputProjectId, projectName, workspaceId: inputWorkspaceId, workspaceKey, workspaceName, versionId } = args as {
             projectId?: string;
             projectName?: string;
             workspaceId?: string;
             workspaceKey?: string;
             workspaceName?: string;
+            versionId?: string;
           };
 
           // Resolve workspace ID if name or key provided
@@ -755,9 +932,9 @@ async function main() {
             };
           }
 
-          logger.info("Publishing project", { projectId, projectName, workspace: workspaceName || workspaceKey });
+          logger.info("Publishing project", { projectId, projectName, versionId, workspace: workspaceName || workspaceKey });
 
-          const result = await theneo.publishProject(projectId);
+          const result = await theneo.publishProject(projectId, versionId);
 
           if (!result.ok) {
             const error = result.error;
@@ -925,6 +1102,491 @@ async function main() {
               {
                 type: "text",
                 text: "AI description generation completed successfully",
+              },
+            ],
+          };
+        }
+
+        case "theneo_get_generation_status": {
+          const { projectId: inputProjectId, projectName, workspaceId: inputWorkspaceId, workspaceKey, workspaceName } = args as {
+            projectId?: string;
+            projectName?: string;
+            workspaceId?: string;
+            workspaceKey?: string;
+            workspaceName?: string;
+          };
+
+          // Resolve workspace ID if name or key provided
+          const workspaceId = await resolveWorkspaceId(
+            theneo,
+            inputWorkspaceId,
+            workspaceKey,
+            workspaceName
+          );
+
+          if (workspaceName && !workspaceId) {
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: `Error: Workspace '${workspaceName}' not found`,
+                },
+              ],
+            };
+          }
+
+          // Resolve project ID from name if needed
+          const projectId = await resolveProjectId(theneo, inputProjectId, projectName, workspaceId);
+
+          if (!projectId) {
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: projectName
+                    ? `Error: Project '${projectName}' not found`
+                    : "Error: projectId or projectName is required",
+                },
+              ],
+            };
+          }
+
+          logger.info("Getting generation status", { projectId, projectName, workspace: workspaceName || workspaceKey });
+
+          const result = await theneo.getDescriptionGenerationStatus(projectId);
+
+          if (!result.ok) {
+            const error = result.error;
+            logger.error("Failed to get generation status", { error });
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: `Error: ${error?.message || "Failed to get generation status"}`,
+                },
+              ],
+            };
+          }
+
+          const status = result.value;
+          logger.info("Generation status retrieved successfully");
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(status, null, 2),
+              },
+            ],
+          };
+        }
+
+        case "theneo_delete_project": {
+          const { projectId: inputProjectId, projectName, workspaceId: inputWorkspaceId, workspaceKey, workspaceName } = args as {
+            projectId?: string;
+            projectName?: string;
+            workspaceId?: string;
+            workspaceKey?: string;
+            workspaceName?: string;
+          };
+
+          // Resolve workspace ID if name or key provided
+          const workspaceId = await resolveWorkspaceId(
+            theneo,
+            inputWorkspaceId,
+            workspaceKey,
+            workspaceName
+          );
+
+          if (workspaceName && !workspaceId) {
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: `Error: Workspace '${workspaceName}' not found`,
+                },
+              ],
+            };
+          }
+
+          // Resolve project ID from name if needed
+          const projectId = await resolveProjectId(theneo, inputProjectId, projectName, workspaceId);
+
+          if (!projectId) {
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: projectName
+                    ? `Error: Project '${projectName}' not found`
+                    : "Error: projectId or projectName is required",
+                },
+              ],
+            };
+          }
+
+          logger.info("Deleting project", { projectId, projectName, workspace: workspaceName || workspaceKey });
+
+          const result = await theneo.deleteProjectById(projectId);
+
+          if (!result.ok) {
+            const error = result.error;
+            logger.error("Failed to delete project", { error });
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: `Error: ${error?.message || "Failed to delete project"}`,
+                },
+              ],
+            };
+          }
+
+          logger.info("Project deleted successfully");
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Project '${projectName || projectId}' deleted successfully`,
+              },
+            ],
+          };
+        }
+
+        case "theneo_list_project_versions": {
+          const { projectId: inputProjectId, projectName, workspaceId: inputWorkspaceId, workspaceKey, workspaceName } = args as {
+            projectId?: string;
+            projectName?: string;
+            workspaceId?: string;
+            workspaceKey?: string;
+            workspaceName?: string;
+          };
+
+          // Resolve workspace ID if name or key provided
+          const workspaceId = await resolveWorkspaceId(
+            theneo,
+            inputWorkspaceId,
+            workspaceKey,
+            workspaceName
+          );
+
+          if (workspaceName && !workspaceId) {
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: `Error: Workspace '${workspaceName}' not found`,
+                },
+              ],
+            };
+          }
+
+          // Resolve project ID from name if needed
+          const projectId = await resolveProjectId(theneo, inputProjectId, projectName, workspaceId);
+
+          if (!projectId) {
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: projectName
+                    ? `Error: Project '${projectName}' not found`
+                    : "Error: projectId or projectName is required",
+                },
+              ],
+            };
+          }
+
+          logger.info("Listing project versions", { projectId, projectName, workspace: workspaceName || workspaceKey });
+
+          const result = await theneo.listProjectVersions(projectId);
+
+          if (!result.ok) {
+            const error = result.error;
+            logger.error("Failed to list project versions", { error });
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: `Error: ${error?.message || "Failed to list project versions"}`,
+                },
+              ],
+            };
+          }
+
+          const versions = result.value;
+          logger.info("Project versions listed successfully");
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(versions, null, 2),
+              },
+            ],
+          };
+        }
+
+        case "theneo_create_project_version": {
+          const input = CreateProjectVersionSchema.parse(args);
+
+          // Resolve workspace ID if name or key provided
+          const workspaceId = await resolveWorkspaceId(
+            theneo,
+            input.workspaceId,
+            input.workspaceKey,
+            input.workspaceName
+          );
+
+          if (input.workspaceName && !workspaceId) {
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: `Error: Workspace '${input.workspaceName}' not found`,
+                },
+              ],
+            };
+          }
+
+          // Resolve project ID from name if needed
+          const projectId = await resolveProjectId(theneo, input.projectId, input.projectName, workspaceId);
+
+          if (!projectId) {
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: input.projectName
+                    ? `Error: Project '${input.projectName}' not found`
+                    : "Error: projectId or projectName is required",
+                },
+              ],
+            };
+          }
+
+          logger.info("Creating project version", { projectId, projectName: input.projectName, versionName: input.name });
+
+          const result = await theneo.createProjectVersion({
+            name: input.name,
+            projectId,
+            previousVersionId: input.previousVersionId,
+            isNewVersion: input.isNewVersion,
+            isEmpty: input.isEmpty,
+            isDefault: input.isDefault,
+          });
+
+          if (!result.ok) {
+            const error = result.error;
+            logger.error("Failed to create project version", { error });
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: `Error: ${error?.message || "Failed to create project version"}`,
+                },
+              ],
+            };
+          }
+
+          const version = result.value;
+          logger.info("Project version created successfully");
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(version, null, 2),
+              },
+            ],
+          };
+        }
+
+        case "theneo_delete_project_version": {
+          const { versionId } = args as { versionId: string };
+
+          if (!versionId) {
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: "Error: versionId is required",
+                },
+              ],
+            };
+          }
+
+          logger.info("Deleting project version", { versionId });
+
+          const result = await theneo.deleteProjectVersion(versionId);
+
+          if (!result.ok) {
+            const error = result.error;
+            logger.error("Failed to delete project version", { error });
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: `Error: ${error?.message || "Failed to delete project version"}`,
+                },
+              ],
+            };
+          }
+
+          logger.info("Project version deleted successfully");
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Project version '${versionId}' deleted successfully`,
+              },
+            ],
+          };
+        }
+
+        case "theneo_add_subscriber_to_version": {
+          const input = AddSubscriberToProjectVersionSchema.parse(args);
+
+          logger.info("Adding subscriber to project version", { email: input.email, versionId: input.projectVersionId });
+
+          const result = await theneo.addSubscriberToProjectVersion({
+            email: input.email,
+            projectVersionId: input.projectVersionId,
+          });
+
+          if (!result.ok) {
+            const error = result.error;
+            logger.error("Failed to add subscriber", { error });
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: `Error: ${error?.message || "Failed to add subscriber"}`,
+                },
+              ],
+            };
+          }
+
+          logger.info("Subscriber added successfully");
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Subscriber '${input.email}' added successfully to version '${input.projectVersionId}'`,
+              },
+            ],
+          };
+        }
+
+        case "theneo_export_project": {
+          const input = ExportProjectSchema.parse(args);
+
+          // Resolve workspace ID if name or key provided
+          const workspaceId = await resolveWorkspaceId(
+            theneo,
+            input.workspaceId,
+            input.workspaceKey,
+            input.workspaceName
+          );
+
+          if (input.workspaceName && !workspaceId) {
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: `Error: Workspace '${input.workspaceName}' not found`,
+                },
+              ],
+            };
+          }
+
+          // Resolve project ID from name if needed
+          const projectId = await resolveProjectId(theneo, input.projectId, input.projectName, workspaceId);
+
+          if (!projectId) {
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: input.projectName
+                    ? `Error: Project '${input.projectName}' not found`
+                    : "Error: projectId or projectName is required",
+                },
+              ],
+            };
+          }
+
+          logger.info("Exporting project", { projectId, projectName: input.projectName, workspace: input.workspaceName || input.workspaceKey });
+
+          const result = await theneo.exportProject({
+            projectId,
+            versionId: input.versionId,
+            dir: input.dir,
+            noGeneration: input.noGeneration,
+            shouldGetPublicViewData: input.shouldGetPublicViewData,
+            openapi: input.openapi,
+          });
+
+          if (!result.ok) {
+            const error = result.error;
+            logger.error("Failed to export project", { error });
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: `Error: ${error?.message || "Failed to export project"}`,
+                },
+              ],
+            };
+          }
+
+          const exportData = result.value;
+          logger.info("Project exported successfully");
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(exportData, null, 2),
+              },
+            ],
+          };
+        }
+
+        case "theneo_list_postman_collections": {
+          const { postmanApiKey } = args as { postmanApiKey: string };
+
+          if (!postmanApiKey) {
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: "Error: postmanApiKey is required",
+                },
+              ],
+            };
+          }
+
+          logger.info("Listing Postman collections");
+
+          const result = await Theneo.listPostmanCollections(postmanApiKey);
+
+          if (!result.ok) {
+            const error = result.error;
+            logger.error("Failed to list Postman collections", { error });
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: `Error: ${error?.message || "Failed to list Postman collections"}`,
+                },
+              ],
+            };
+          }
+
+          const collections = result.value;
+          logger.info("Postman collections listed successfully");
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(collections, null, 2),
               },
             ],
           };
